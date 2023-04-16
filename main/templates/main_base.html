@@ -1,0 +1,460 @@
+<!doctype html>
+{% load cache %}
+{% load i18n %}
+{% load static %}
+<html lang="en" class="light-theme">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{% static 'assets/images/favicon-32x32.png' %} " type="image/png"/>
+    <!--plugins-->
+    <link href="{% static 'assets/plugins/simplebar/css/simplebar.css' %} " rel="stylesheet"/>
+    <link href="{% static 'assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css' %} " rel="stylesheet"/>
+    <link href="{% static 'assets/plugins/vectormap/jquery-jvectormap-2.0.2.css' %} " rel="stylesheet"/>
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'assets/css/bootstrap.min.css' %} " rel="stylesheet"/>
+    <link href="{% static 'assets/css/bootstrap-extended.css' %} " rel="stylesheet"/>
+    <link href="{% static 'assets/css/style.css' %} " rel="stylesheet"/>
+    <link href="{% static 'assets/css/icons.css' %} " rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css '%} ">
+    <!-- loader-->
+    <link href="{% static 'assets/css/pace.min.css' %} " rel="stylesheet"/>
+    <!--Theme Styles-->
+    <link href="{% static 'assets/css/dark-theme.css' %} " rel="stylesheet"/>
+    <link href="{% static 'assets/css/light-theme.css' %} " rel="stylesheet"/>
+    <link href="{% static 'assets/css/semi-dark.css' %} " rel="stylesheet"/>
+    <link href="{% static 'assets/css/header-colors.css' %} " rel="stylesheet"/>
+
+    <!-- Theme Style -->
+    <link rel="stylesheet" type="text/css" href="{% static 'nufti/assets/dist/style.css' %} ">
+
+    <!-- Reponsive -->
+    <link rel="stylesheet" type="text/css" href="{% static 'nufti/assets/dist/responsive.css' %} ">
+    <link rel="shortcut icon" href="{% static 'nufti/assets/icon/Favicon.png' %}">
+    <link rel="apple-touch-icon-precomposed" href="{% static 'nufti/assets/icon/Favicon.png' %}">
+    <title>{% block title %} {% trans 'Wildberries' %} {% endblock %}</title>
+</head>
+
+<body>
+<style>
+.my-1 {
+    color: black;
+}
+.form-select {
+    font-size: 2rem!important;
+    }
+.link-dark {
+   color: #000;
+}
+.page-content{
+    margin-left: 50px!important;
+    margin-top: 90px!important;
+
+</style>
+
+{% block nav %}
+<header id="header_main" class="header_1 js-header">
+    <div class="themes-container">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="site-header-inner">
+                    <div class="wrap-box flex">
+                        <div id="site-logo" class="clearfix">
+                            <div id="site-logo-inner">
+                            </div>
+                        </div>
+                        <div class="mobile-button"><span></span></div><!-- /.mobile-button -->
+                        <nav id="main-nav" class="main-nav">
+                            <ul id="menu-primary-menu" class="menu">
+                                {% if request.user.is_staff %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'read_excel:main' %}">Загрузка</a>
+                                </li>
+                                {% endif %}
+                                {% if not request.user.is_authenticated %}
+                                <li>
+                                    <a class="nav-link" href="{% url 'users:login' %}">{% trans 'Вход'%}</a>
+                                    <a class="nav-link" href="#">
+                                        {{ user.username }}
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li>
+                                <a class="nav-link" href="{% url 'users:logout' %}">{% trans 'Выход' %}</a>
+                                </li>
+                                {% endif %}
+
+                            </ul>
+                        </nav><!-- /#main-nav -->
+                        <div class="wrap-box flex">
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mode_switcher">
+        <a href="#" onclick="switchTheme()" class="light d-flex align-items-center">
+            <img src="{% static 'nufti/assets/images/icon/sun.png' %}" alt="">
+        </a>
+        <a href="#" onclick="switchTheme()" class="dark d-flex align-items-center is_active">
+            <img src="{% static 'nufti/assets/images/icon/moon.png' %}" alt="">
+        </a>
+    </div>
+    </div>
+</header>
+{% endblock %}
+
+<main class="page-content">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+    {% block content %}
+    Content
+    {% endblock %}
+</main>
+
+<!-- Bootstrap bundle JS -->
+<script src="{% static 'assets/js/bootstrap.bundle.min.js '%} "></script>
+<!--plugins-->
+<script src="{% static 'assets/js/jquery.min.js '%} "></script>
+<script src="{% static 'assets/plugins/simplebar/js/simplebar.min.js '%} "></script>
+<script src="{% static 'assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js '%} "></script>
+<script src="{% static 'assets/js/pace.min.js '%} "></script>
+<script src="{% static 'assets/plugins/vectormap/jquery-jvectormap-2.0.2.min.js '%} "></script>
+<script src="{% static 'assets/plugins/vectormap/jquery-jvectormap-world-mill-en.js '%} "></script>
+<script src="{% static 'assets/plugins/apexcharts-bundle/js/apexcharts.min.js '%} "></script>
+<!--app-->
+<script src="{% static 'assets/js/app.js '%} "></script>
+<script src="{% static 'assets/js/index.js '%} "></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/variable-pie.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<script>
+     new PerfectScrollbar(".best-product")
+     new PerfectScrollbar(".top-sellers-list")
+</script>
+<script>
+   Highcharts.chart('container1', {
+  chart: {
+    type: 'spline',
+    scrollablePlotArea: {
+      minWidth: 600,
+      scrollPositionX: 1
+    }
+  },
+  title: {
+    text: 'Общее количество операций({{all_operations_count}} шт.)',
+    align: 'center'
+  },
+  subtitle: {
+    text: '',
+    align: 'left'
+  },
+  xAxis: {
+    categories: [
+        {% for i in date_list %}
+        '{{ i|safe }}',
+        {% endfor %}
+    ],
+    accessibility: {
+      description: 'Количество операций по дням'
+    }
+  },
+  yAxis: {
+    title: {
+      text: 'Количество(шт.)'
+    },
+    minorGridLineWidth: 0,
+    gridLineWidth: 0,
+    alternateGridColor: null,
+    plotBands: [{ // Light air
+      from: 0.3,
+      to: 1.5,
+      color: 'rgba(68, 170, 213, 0.1)',
+      label: {
+        text: '',
+        style: {
+          color: '#606060'
+        }
+      }
+    }, { // Light breeze
+      from: 1.5,
+      to: 3.3,
+      color: 'rgba(0, 0, 0, 0)',
+      label: {
+        text: '',
+        style: {
+          color: '#606060'
+        }
+      }
+    }, { // Gentle breeze
+      from: 3.3,
+      to: 5.5,
+      color: 'rgba(68, 170, 213, 0.1)',
+      label: {
+        text: '',
+        style: {
+          color: '#606060'
+        }
+      }
+    }, { // Moderate breeze
+      from: 5.5,
+      to: 8,
+      color: 'rgba(0, 0, 0, 0)',
+      label: {
+        text: '',
+        style: {
+          color: '#606060'
+        }
+      }
+    }, { // Fresh breeze
+      from: 8,
+      to: 11,
+      color: 'rgba(68, 170, 213, 0.1)',
+      label: {
+        text: '',
+        style: {
+          color: '#606060'
+        }
+      }
+    }, { // Strong breeze
+      from: 11,
+      to: 14,
+      color: 'rgba(0, 0, 0, 0)',
+      label: {
+        text: '',
+        style: {
+          color: '#606060'
+        }
+      }
+    }, { // High wind
+      from: 14,
+      to: 15,
+      color: 'rgba(68, 170, 213, 0.1)',
+      label: {
+        text: '',
+        style: {
+          color: '#606060'
+        }
+      }
+    }]
+  },
+  tooltip: {
+    valueSuffix: ' шт.'
+  },
+  plotOptions: {
+    spline: {
+      marker: {
+        radius: 4,
+        lineColor: '#666666',
+        lineWidth: 1
+      }
+    }
+  },
+  series: [{
+    name: 'Все операции',
+    data: [
+        {% for i in all_operation_day %}
+        {{ i }},
+        {% endfor %}
+    ]
+
+  },
+          ],
+  navigation: {
+    menuItemStyle: {
+      fontSize: '10px'
+    }
+  }
+});
+</script>
+<script>
+   Highcharts.chart('container2', {
+
+  title: {
+    text: 'Количество операций по дням'
+  },
+
+  subtitle: {
+    text: ''
+  },
+
+  yAxis: {
+    title: {
+      text: 'Количество (шт.)'
+    }
+  },
+
+  xAxis: {
+    categories: [
+        {% for i in date_list %}
+        '{{ i|safe }}',
+        {% endfor %}
+    ],
+    accessibility: {
+      description: 'Количество операций по дням'
+    }
+  },
+
+  legend: {
+    layout: 'vertical',
+    align: 'right',
+    verticalAlign: 'middle'
+  },
+
+  plotOptions: {
+    spline: {
+      marker: {
+        radius: 4,
+        lineColor: '#666666',
+        lineWidth: 1
+      }
+    }
+  },
+
+  series: [{
+    name: 'Отгрузка',
+    data: [{% for item in Отгрузка %}
+            {{ item }},
+            {% endfor %}]
+  }, {
+    name: 'Подбор',
+    data: [{% for item in Подбор %}
+            {{ item }},
+            {% endfor %}]
+  }, {
+    name: 'Приемка',
+    data: [{% for item in Приемка %}
+           {{ item }},
+            {% endfor %}]
+  }, {
+    name: 'Доставка',
+    data: [{% for item in Доставка %}
+            {{ item }},
+            {% endfor %}]
+  }, {
+    name: 'Перенос',
+    data: [{% for item in Перенос %}
+            {{ item }},
+            {% endfor %}]
+  }, {
+    name: 'Пст в зал',
+    data: [{% for item in Пст_в_зал %}
+            {{ item }},
+            {% endfor %}]
+  }, {
+    name: 'Инвентаризация',
+    data: [{% for item in Инвентаризация %}
+            {{ item }},
+            {% endfor %}]
+  }, {
+    name: 'Самовывоз',
+    data: [{% for item in Самовывоз %}
+            {{ item }},
+            {% endfor %}]
+  }],
+
+  responsive: {
+    rules: [{
+      condition: {
+        maxWidth: 500
+      },
+      chartOptions: {
+        legend: {
+          layout: 'horizontal',
+          align: 'center',
+          verticalAlign: 'bottom'
+        }
+      }
+    }]
+  }
+
+});
+</script>
+<script>
+Highcharts.chart('container3', {
+  chart: {
+    type: 'variablepie'
+  },
+  title: {
+    text: 'Статистика за месяц'
+  },
+  tooltip: {
+    headerFormat: '',
+    pointFormat: '<span style="color:{point.color}">\u25CF</span> <b> {point.name}</b><br/>' +
+      'Количество: <b>{point.y}</b><br/>' +
+      'Процент: <b>{point.z} %</b><br/>'
+  },
+  series: [{
+    minPointSize: 10,
+    innerSize: '20%',
+    zMin: 0,
+    name: 'countries',
+    data: [
+            {% for i in sorted_all %}
+                {
+                  name: '{{i.0}}',
+                  y: {{i.1.0}},
+                  z: {{i.1.1|floatformat:0}}
+                },
+            {% endfor %}
+            ]
+  }]
+});
+
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const getSort = ({ target }) => {
+        const order = (target.dataset.order = -(target.dataset.order || -1));
+        const index = [...target.parentNode.cells].indexOf(target);
+        const collator = new Intl.Collator(['en', 'ru'], { numeric: true });
+        const comparator = (index, order) => (a, b) => order * collator.compare(
+            a.children[index].innerHTML,
+            b.children[index].innerHTML
+        );
+
+        for(const tBody of target.closest('table').tBodies)
+            tBody.append(...[...tBody.rows].sort(comparator(index, order)));
+
+        for(const cell of target.parentNode.cells)
+            cell.classList.toggle('sorted', cell === target);
+    };
+
+    document.querySelectorAll('.table_sort thead').forEach(tableTH => tableTH.addEventListener('click', () => getSort(event)));
+
+});
+</script>
+<!-- Javascript -->
+<script src="{% static 'nufti/assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'nufti/assets/js/jquery.easing.js' %}"></script>
+<script src="{% static 'nufti/assets/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'nufti/assets/js/swiper-bundle.min.js' %}"></script>
+<script src="{% static 'nufti/assets/js/swiper.js' %}"></script>
+<script src="{% static 'nufti/assets/js/jquery.fancybox.js' %}"></script>
+
+<script src="{% static 'nufti/assets/js/plugin.js' %}"></script>
+<script src="{% static 'nufti/assets/js/count-down.js' %}"></script>
+<script src="{% static 'nufti/assets/js/shortcodes.js' %}"></script>
+<script src="{% static 'nufti/assets/js/main.js' %}"></script>
+
+<script src="{% static 'nufti/assets/js/countto.js' %}"></script>
+<script src="{% static 'nufti/assets/js/switchmode.js' %}"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,23 @@
+{% extends 'main_base.html' %}
+{% load i18n %}
+{% block title %}
+{% trans 'Загруженные заказы' %}
+{% endblock %}
+{% load static %}
+{% block content %}
+<h2 class="text-center mb-4">Загрузка заказов</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="fieldWrapper">
+        {{ field.errors }}<br>
+        {{ field.label_tag }} <br>
+        {{ field }}
+    </div>
+    {% endfor %}
+
+    <div class="col-auto mb-4 mt-4">
+        <button class="btn btn-sm btn-outline-secondary" type="submit">{% trans 'Загрузить файл' %}</button>
+    </div>
+</form>
+{% endblock %}
