@@ -39,7 +39,6 @@ class MainPage(FormView, LoginRequiredMixin):
                     code_prod=row[11],
                     status=row[13],
                     duration=row[17],
-
                 )
                 order.save()
             return super().form_valid(form)
