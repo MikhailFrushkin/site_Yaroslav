@@ -28,3 +28,22 @@ class Orders(models.Model):
     def __str__(self):
         return f'{self.code_prod} - {self.name_product}'
 
+
+class GroupedOrders(models.Model):
+    name_product = models.TextField(verbose_name='Название товара', null=True, blank=True)
+    code_prod = models.CharField(verbose_name='Артикул продавца', db_index=True, max_length=100)
+    total_num = models.IntegerField(verbose_name='Колиество заказано')
+
+    path_files = models.TextField(verbose_name='Папка с файлами заказа', null=True, blank=True)
+    size = models.IntegerField(verbose_name='Размер значка', null=True, blank=True)
+    quantity = models.IntegerField(verbose_name='Количество значков в наборе', null=True, blank=True)
+
+    class Meta:
+        ordering = ('code_prod',)
+        index_together = (('code_prod',),)
+        verbose_name = 'Сгруппированный заказ'
+        verbose_name_plural = 'Сгруппированный заказы'
+
+    def __str__(self):
+        return f'{self.code_prod} - {self.name_product}'
+

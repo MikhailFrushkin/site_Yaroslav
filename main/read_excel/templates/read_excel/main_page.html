@@ -1,0 +1,69 @@
+{% extends 'main_base.html' %}
+{% load i18n %}
+{% block title %}
+{% trans 'Загруженные заказы' %}
+{% endblock %}
+{% load static %}
+{% block content %}
+<h2 class="text-center mb-4">Новые заказы</h2>
+
+<!--<ul>-->
+<!--    {% for order in orders_list %}-->
+<!--    <li>-->
+<!--        <h2>{{ order.code_prod }}</h2>-->
+<!--        <p>{{ order.name_product }}</p>-->
+<!--        <p>{{ order.price }}</p>-->
+<!--        <p>{{ order.status }}</p>-->
+<!--        <p>Время с момента заказа: {{ order.duration }}</p>-->
+<!--    </li>-->
+<!--    {% endfor %}-->
+<!--</ul>-->
+
+<table>
+    <thead>
+    <tr>
+        <th>Код товара</th>
+        <th>Название</th>
+        <th>Общее количество</th>
+        <th>Статус</th>
+        <th>Путь к файла</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    {% for order in orders %}
+    <tr>
+        <td>{{ order.code_prod }}</td>
+        <td>{{ order.name_product }}</td>
+        <td>{{ order.total_num }}</td>
+        <td>{{ order.status }}</td>
+        <td>{{ order.path_files }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h2 class="text-center mb-4">Другие заказы</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>Код товара</th>
+        <th>Название</th>
+        <th>Общее количество</th>
+        <th>Статус</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    {% for order in orders_old %}
+    <tr>
+        <td>{{ order.code_prod }}</td>
+        <td>{{ order.name_product }}</td>
+        <td>{{ order.total_num }}</td>
+        <td>{{ order.status }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -68,11 +68,12 @@
                         <div class="mobile-button"><span></span></div><!-- /.mobile-button -->
                         <nav id="main-nav" class="main-nav">
                             <ul id="menu-primary-menu" class="menu">
-                                {% if request.user.is_staff %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'read_excel:main' %}">Загрузка</a>
+                                    <a class="nav-link" href="{% url 'read_excel:dowload' %}">Загрузка</a>
                                 </li>
-                                {% endif %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'read_excel:collect' %}">Поиск файлов изображений</a>
+                                </li>
                                 {% if not request.user.is_authenticated %}
                                 <li>
                                     <a class="nav-link" href="{% url 'users:login' %}">{% trans 'Вход'%}</a>

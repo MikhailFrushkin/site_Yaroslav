@@ -1,0 +1,55 @@
+{% extends 'main_base.html' %}
+{% load i18n %}
+{% block title %}
+{% trans 'Загруженные заказы' %}
+{% endblock %}
+{% load static %}
+{% block content %}
+<h2 class="text-center mb-4">Найденные артикула</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>Код товара</th>
+        <th>Название</th>
+        <th>Общее количество</th>
+        <th>Путь к файлам</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    {% for order in orders %}
+    <tr>
+        <td>{{ order.code_prod }}</td>
+        <td>{{ order.name_product }}</td>
+        <td>{{ order.total_num }}</td>
+        <td>{{ order.path_files }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h2 class="text-center mb-4">Не найденные артикула</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>Код товара</th>
+        <th>Название</th>
+        <th>Общее количество</th>
+        <th>Путь к файлам</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    {% for order in bad_orders %}
+    <tr>
+        <td>{{ order.code_prod }}</td>
+        <td>{{ order.name_product }}</td>
+        <td>{{ order.total_num }}</td>
+        <td>{{ order.path_files }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
