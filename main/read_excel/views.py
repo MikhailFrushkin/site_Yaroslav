@@ -1,3 +1,4 @@
+import glob
 from datetime import datetime
 
 import openpyxl
@@ -8,7 +9,7 @@ from django.views.generic import FormView, ListView
 
 from read_excel.forms import DowloadFile
 from read_excel.models import Orders, GroupedOrders
-from utils.utils import search_folder
+from utils.utils import search_folder, split_image, unique_images_function
 
 
 class MainPage(ListView, LoginRequiredMixin):
@@ -30,14 +31,35 @@ class MainPage(ListView, LoginRequiredMixin):
 class CollectProduct(ListView, LoginRequiredMixin):
     login_url = 'users/login/'
     template_name = 'read_excel/collect.html'
-    model = GroupedOrders
+    model = Orders
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         from django.db.models import Q
+        context['products'] = Orders.objects.exclude(Q(path_files__isnull=True)). \
+            values('code_prod', 'name_product', 'path_files'). \
+            annotate(total_num=Count('code_prod')).order_by('-total_num')
 
-        context['orders'] = GroupedOrders.objects.exclude(Q(path_files__isnull=True))
-        context['bad_orders'] = GroupedOrders.objects.filter(path_files__isnull=True)
+
+        for prod in context['products']:
+            obj, created = GroupedOrders.objects.get_or_create(
+                name_product=prod['name_product'],
+                code_prod=prod['code_prod'],
+                total_num=prod['total_num'],
+                path_files=prod['path_files'],
+            )
+
+        for order in context['products']:
+            files = glob.glob(order['path_files'] + '/*.png') + glob.glob(order['path_files'] + '/*.jpg')
+            if len(files) > 1:
+                print('найшлось больше 1 файла со значками')
+            name_image = files[0]
+            split_image(name_image, order['path_files'])
+            unique_images_function(order['path_files'])
+        context['bad_products'] = Orders.objects.filter(path_files__isnull=True). \
+            values('code_prod', 'name_product', 'path_files'). \
+            annotate(total_num=Count('code_prod')).order_by('-total_num')
+
         return context
 
 

@@ -18,7 +18,7 @@
     </tr>
     </thead>
     <tbody>
-    {% for order in orders %}
+    {% for order in products %}
     <tr>
         <td>{{ order.code_prod }}</td>
         <td>{{ order.name_product }}</td>
@@ -42,7 +42,7 @@
     </tr>
     </thead>
     <tbody>
-    {% for order in bad_orders %}
+    {% for order in bad_products %}
     <tr>
         <td>{{ order.code_prod }}</td>
         <td>{{ order.name_product }}</td>
