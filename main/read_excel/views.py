@@ -1,6 +1,6 @@
 import glob
 from datetime import datetime
-
+from loguru import logger
 import openpyxl
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
@@ -9,7 +9,7 @@ from django.views.generic import FormView, ListView
 
 from read_excel.forms import DowloadFile
 from read_excel.models import Orders, GroupedOrders
-from utils.utils import search_folder, split_image, unique_images_function
+from utils.utils import search_folder, split_image, unique_images_function, add_images, distribute_images
 
 
 class MainPage(ListView, LoginRequiredMixin):
@@ -36,33 +36,74 @@ class CollectProduct(ListView, LoginRequiredMixin):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         from django.db.models import Q
-        context['products'] = Orders.objects.exclude(Q(path_files__isnull=True)). \
-            values('code_prod', 'name_product', 'path_files'). \
+        products = Orders.objects.exclude(Q(path_files__isnull=True)). \
+            values('code_prod', 'name_product', 'path_files', 'size', 'quantity'). \
             annotate(total_num=Count('code_prod')).order_by('-total_num')
 
-
-        for prod in context['products']:
+        for prod in products:
             obj, created = GroupedOrders.objects.get_or_create(
                 name_product=prod['name_product'],
                 code_prod=prod['code_prod'],
                 total_num=prod['total_num'],
-                path_files=prod['path_files'],
-            )
+                path_files=prod['path_files'], )
 
-        for order in context['products']:
+        for order in products:
             files = glob.glob(order['path_files'] + '/*.png') + glob.glob(order['path_files'] + '/*.jpg')
             if len(files) > 1:
                 print('найшлось больше 1 файла со значками')
             elif len(files) > 0:
                 name_image = files[0]
-                split_image(name_image, order['path_files'])
-                unique_images_function(order['path_files'])
+                try:
+                    split_image(name_image, order['path_files'])
+                except Exception as ex:
+                    print(f'Ошибка в разделение изображения {ex}')
+                try:
+                    unique_images_function(order['path_files'])
+                except Exception as ex:
+                    print(f'Ошибка в разделение изображения {ex}')
             else:
                 print(order)
+        context['products'] = GroupedOrders.objects.all()
         context['bad_products'] = Orders.objects.filter(path_files__isnull=True). \
             values('code_prod', 'name_product', 'path_files'). \
             annotate(total_num=Count('code_prod')).order_by('-total_num')
+        return context
 
+
+class AddImages(ListView, LoginRequiredMixin):
+    login_url = 'users/login/'
+    template_name = 'read_excel/add_images.html'
+    model = GroupedOrders
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        queryset_37 = GroupedOrders.objects.filter(size=37)
+        queryset_56 = GroupedOrders.objects.filter(size=56)
+        try:
+            add_images(queryset_56)
+        except Exception as ex:
+            logger.debug(f'Ошибка в добавление изображений на лист {ex}')
+        context['queryset_37'] = queryset_37
+        context['queryset_56'] = queryset_56
+        dict_images = {
+            'набор1': {
+                'количество в наборе': 4,
+                'количество наборов': 3
+            },
+            'набор2': {
+                'количество в наборе': 8,
+                'количество наборов': 4
+            },
+            'набор3': {
+                'количество в наборе': 1,
+                'количество наборов': 30
+            },
+            'набор4': {
+                'количество в наборе': 20,
+                'количество наборов': 3
+            },
+        }
+        distribute_images(dict_images)
         return context
 
 

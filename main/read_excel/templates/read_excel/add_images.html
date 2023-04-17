@@ -5,7 +5,7 @@
 {% endblock %}
 {% load static %}
 {% block content %}
-<h2 class="text-center mb-4">Найденные артикула</h2>
+<h2 class="text-center mb-4">Значок на 37 мм</h2>
 
 <table>
     <thead>
@@ -19,7 +19,7 @@
     </tr>
     </thead>
     <tbody>
-    {% for order in products %}
+    {% for order in queryset_37 %}
     <tr>
         <td>{{ order.code_prod }}</td>
         <td>{{ order.name_product }}</td>
@@ -31,24 +31,25 @@
     {% endfor %}
     </tbody>
 </table>
-
-<h2 class="text-center mb-4">Не найденные артикула</h2>
-
+<h2 class="text-center mb-4">Значок на 56 мм</h2>
 <table>
     <thead>
     <tr>
         <th>Код товара</th>
         <th>Название</th>
+        <th>Размер</th>
+        <th>Количество в наборе</th>
         <th>Общее количество</th>
         <th>Путь к файлам</th>
-
     </tr>
     </thead>
     <tbody>
-    {% for order in bad_products %}
+    {% for order in queryset_56 %}
     <tr>
         <td>{{ order.code_prod }}</td>
         <td>{{ order.name_product }}</td>
+        <td>{{ order.size }}</td>
+        <td>{{ order.quantity }}</td>
         <td>{{ order.total_num }}</td>
         <td>{{ order.path_files }}</td>
     </tr>
@@ -56,3 +57,4 @@
     </tbody>
 </table>
 {% endblock %}
+

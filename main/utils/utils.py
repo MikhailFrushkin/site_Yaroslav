@@ -93,23 +93,17 @@ def unique_images_function(directory):
                     for j in range(1, i):
                         img1 = cv2.imread(f'{out_dir}/{i}.png')
                         img2 = cv2.imread(f'{out_dir}/{j}.png')
-
                         gray_img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
                         gray_img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-
                         h1, w1 = gray_img1.shape
                         h2, w2 = gray_img2.shape
-
                         # Если изображения имеют разные размеры, изменить размер одного или обоих изображений
                         if h1 != h2 or w1 != w2:
                             # Найти наибольший размер
                             min_h, min_w = max(h1, h2), max(w1, w2)
-
                             gray_img1 = cv2.resize(gray_img1, (min_w, min_h))
                             gray_img2 = cv2.resize(gray_img2, (min_w, min_h))
-
                         similarity_score = ssim(gray_img1, gray_img2)
-
                         if similarity_score > ssim_threshold:
                             unique = False
                             break
@@ -121,9 +115,125 @@ def unique_images_function(directory):
                 continue
         for i, img in enumerate(unique_images):
             img.save(f'{os.path.join(out_dir, folder_name2)}/{i + 1}.png')
-            print(i)
+            print(i + 1)
         prod = GroupedOrders.objects.get(path_files=directory)
         prod.quantity = len(unique_images)
         prod.save()
     else:
         print("Папка", folder_name2, "уже существует в директории", out_dir)
+
+
+def add_images(queryset):
+    A4_WIDTH = 2480
+    A4_HEIGHT = 3508
+    dict_sizes_images = {
+        25: (35, 20),
+        37: (48, 20),
+        44: (53, 16),
+        56: (66, 12)
+    }
+    ICON_SIZE = int((dict_sizes_images[queryset.first().size][0] / 25.4) * 300)
+    size_images_param = dict_sizes_images[queryset.first().size]
+    COUNT_PER_PAGE = size_images_param[1]
+    if size_images_param[1] == 20:
+        ICONS_PER_ROW = 4
+        ICONS_PER_COL = 5
+    elif size_images_param[1] == 12:
+        ICONS_PER_ROW = 3
+        ICONS_PER_COL = 4
+    for product in queryset:
+        num = product.total_num
+        path_images = f'{product.path_files}/Значки по отдельности/Уникальные значки/'
+        files = glob.glob(path_images + '/*.png')
+        print(files)
+        print(f'Количество значков в папке: {len(files)}')
+        print(f'Количество значков  в общем на {num} заказов: {len(files) * num}')
+        all_images = len(files) * num
+        num_page = len(files) * num // COUNT_PER_PAGE
+        if len(files) * num % COUNT_PER_PAGE > 0:
+            num_page += 1
+        print(f'Количество листов: {num_page}')
+        for page in range(num_page):
+            result_image = Image.new('RGB', (A4_WIDTH, A4_HEIGHT), (255, 255, 255))
+            for i in range(0, ICONS_PER_ROW * ICONS_PER_COL, len(files)):
+                if i > COUNT_PER_PAGE or all_images == 0:
+                    break
+                try:
+                    for file in files:
+                        if all_images == 0:
+                            break
+                        icon_image = Image.open(file).convert('RGBA')
+                        background = Image.new('RGBA', icon_image.size, (255, 255, 255, 255))
+                        alpha_composite = Image.alpha_composite(background, icon_image)
+                        icon_image = alpha_composite.crop(alpha_composite.getbbox())
+                        icon_image = icon_image.resize((ICON_SIZE, ICON_SIZE))
+                        # Вычисляем координаты для размещения изображения на листе A4
+                        row = i // ICONS_PER_ROW
+                        col = i % ICONS_PER_ROW
+                        x = col * ICON_SIZE + (A4_WIDTH - ICON_SIZE * ICONS_PER_ROW) // 2
+                        y = row * ICON_SIZE + (A4_HEIGHT - ICON_SIZE * ICONS_PER_COL) // 2
+                        # Размещаем изображение на листе A4
+                        result_image.paste(icon_image, (x, y))
+                        i += 1
+                        all_images -= 1
+                except Exception as ex:
+                    print(ex)
+            result_image.save(f'result_{product.name_product}_{page + 1}.png')
+
+
+def distribute_images(queryset):
+    group1 = ['img1_1', 'img1_2', 'img1_3', 'img1_4']
+    group2 = ['img2_1', 'img2_2', 'img2_3', 'img2_4', 'img2_5', 'img2_6', 'img2_7', 'img2_8']
+
+    groups = [group1, group1,
+              group2, group2,
+              ]
+
+    groups = sorted(groups, key=lambda x: -len(x))
+    total_length = sum(len(group) for group in groups)
+    print(total_length)
+    result = []
+    i = 0
+    while len(groups) > 0:
+        j = 1
+        new_group = []
+        new_group.extend(groups[i])
+        while j < len(groups) or len(new_group) == 20:
+            try:
+                group = groups[j]
+            except Exception as ex:
+                print(ex)
+                break
+            len_collect = len(new_group) + len(group)
+            if len_collect <= 20:
+                new_group.extend(group)
+                groups.pop(j)
+            else:
+                j += 1
+            if len(new_group) == 20:
+                break
+        groups.pop(i)
+        result.append(new_group)
+    for row in result:
+        print(len(row), row)
+
+if __name__ == '__main__':
+    dict_images = {
+        'набор1': {
+            'количество в наборе': 4,
+            'количество наборов': 3
+        },
+        'набор2': {
+            'количество в наборе': 8,
+            'количество наборов': 4
+        },
+        'набор3': {
+            'количество в наборе': 1,
+            'количество наборов': 30
+        },
+        'набор4': {
+            'количество в наборе': 20,
+            'количество наборов': 3
+        },
+    }
+    distribute_images(dict_images)

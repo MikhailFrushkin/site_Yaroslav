@@ -74,6 +74,9 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'read_excel:collect' %}">Просмотр по файлам</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'read_excel:add_images' %}">Добавление на лист</a>
+                                </li>
                                 {% if not request.user.is_authenticated %}
                                 <li>
                                     <a class="nav-link" href="{% url 'users:login' %}">{% trans 'Вход'%}</a>
