@@ -79,31 +79,13 @@ class AddImages(ListView, LoginRequiredMixin):
         context = super().get_context_data(**kwargs)
         queryset_37 = GroupedOrders.objects.filter(size=37)
         queryset_56 = GroupedOrders.objects.filter(size=56)
-        try:
-            add_images(queryset_56)
-        except Exception as ex:
-            logger.debug(f'Ошибка в добавление изображений на лист {ex}')
+
         context['queryset_37'] = queryset_37
         context['queryset_56'] = queryset_56
-        dict_images = {
-            'набор1': {
-                'количество в наборе': 4,
-                'количество наборов': 3
-            },
-            'набор2': {
-                'количество в наборе': 8,
-                'количество наборов': 4
-            },
-            'набор3': {
-                'количество в наборе': 1,
-                'количество наборов': 30
-            },
-            'набор4': {
-                'количество в наборе': 20,
-                'количество наборов': 3
-            },
-        }
-        distribute_images(dict_images)
+        try:
+            distribute_images(queryset_37)
+        except Exception as ex:
+            logger.debug(f'Ошибка в добавление изображений на лист {ex}')
         return context
 
 
