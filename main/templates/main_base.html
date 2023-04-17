@@ -51,7 +51,16 @@
 .page-content{
     margin-left: 50px!important;
     margin-top: 90px!important;
-
+.my_table td {
+  font-family: Arial, sans-serif; /* выберите нужный вам шрифт */
+  font-size: 20px!important;
+  color: #666; /* выберите нужный вам цвет */
+}
+.my_table th {
+  font-family: Arial, sans-serif; /* выберите нужный вам шрифт */
+  font-size: 20px!important;
+  color: #333; /* выберите нужный вам цвет */
+}
 </style>
 
 {% block nav %}
@@ -72,7 +81,7 @@
                                     <a class="nav-link" href="{% url 'read_excel:dowload' %}">Загрузка</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'read_excel:collect' %}">Просмотр по файлам</a>
+                                    <a class="nav-link" href="{% url 'read_excel:collect' %}">Разрезать картинки</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'read_excel:add_images' %}">Создать листы со значками</a>
@@ -114,13 +123,13 @@
 {% endblock %}
 
 <main class="page-content">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-danger" role="alert">
-            {{ message }}
-        </div>
-        {% endfor %}
-        {% endif %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
     {% block content %}
     Content
     {% endblock %}

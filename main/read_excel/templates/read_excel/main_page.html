@@ -7,37 +7,25 @@
 {% block content %}
 <h2 class="text-center mb-4">Новые заказы</h2>
 
-<!--<ul>-->
-<!--    {% for order in orders_list %}-->
-<!--    <li>-->
-<!--        <h2>{{ order.code_prod }}</h2>-->
-<!--        <p>{{ order.name_product }}</p>-->
-<!--        <p>{{ order.price }}</p>-->
-<!--        <p>{{ order.status }}</p>-->
-<!--        <p>Время с момента заказа: {{ order.duration }}</p>-->
-<!--    </li>-->
-<!--    {% endfor %}-->
-<!--</ul>-->
-
-<table>
+<table class="my_table">
     <thead>
     <tr>
-        <th>Код товара</th>
-        <th>Название</th>
-        <th>Общее количество</th>
-        <th>Статус</th>
+        <th style="width: 15%;font-size: 16px;">Код товара</th>
+        <th style="width: 30%;font-size: 16px;">Название</th>
+        <th style="width: 10%;font-size: 16px;">Общее количество</th>
+        <th style="width: 10%;font-size: 16px;">Статус</th>
+        <th style="width: 35%;font-size: 16px;">Путь к файлу</th>
         <th>Путь к файла</th>
-
     </tr>
     </thead>
     <tbody>
     {% for order in orders %}
     <tr>
-        <td>{{ order.code_prod }}</td>
-        <td>{{ order.name_product }}</td>
-        <td>{{ order.total_num }}</td>
-        <td>{{ order.status }}</td>
-        <td>{{ order.path_files }}</td>
+        <td style="font-size: 12px; word-wrap: break-word;">{{ order.code_prod }}</td>
+        <td style="font-size: 12px; word-wrap: break-word;">{{ order.name_product }}</td>
+        <td style="font-size: 12px; word-wrap: break-word;">{{ order.total_num }}</td>
+        <td style="font-size: 12px; word-wrap: break-word;">{{ order.status }}</td>
+        <td style="font-size: 12px; word-wrap: break-word;">{{ order.path_files }}</td>
     </tr>
     {% endfor %}
     </tbody>

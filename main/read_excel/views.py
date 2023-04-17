@@ -7,6 +7,7 @@ from django.db.models import Count
 from django.urls import reverse_lazy
 from django.views.generic import FormView, ListView
 
+from main.settings import STATIC_ROOT, STATICFILES_DIRS
 from read_excel.forms import DowloadFile
 from read_excel.models import Orders, GroupedOrders
 from utils.utils import search_folder, split_image, unique_images_function, distribute_images
@@ -19,6 +20,7 @@ class MainPage(ListView, LoginRequiredMixin):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        print(STATIC_ROOT, STATICFILES_DIRS)
         context['orders'] = Orders.objects.filter(status='Новое').values('code_prod', 'name_product', 'status',
                                                                          'path_files') \
             .annotate(total_num=Count('code_prod')).order_by('-total_num')
