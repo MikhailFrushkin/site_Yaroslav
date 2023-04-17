@@ -53,9 +53,12 @@ class CollectProduct(ListView, LoginRequiredMixin):
             files = glob.glob(order['path_files'] + '/*.png') + glob.glob(order['path_files'] + '/*.jpg')
             if len(files) > 1:
                 print('найшлось больше 1 файла со значками')
-            name_image = files[0]
-            split_image(name_image, order['path_files'])
-            unique_images_function(order['path_files'])
+            elif len(files) > 0:
+                name_image = files[0]
+                split_image(name_image, order['path_files'])
+                unique_images_function(order['path_files'])
+            else:
+                print(order)
         context['bad_products'] = Orders.objects.filter(path_files__isnull=True). \
             values('code_prod', 'name_product', 'path_files'). \
             annotate(total_num=Count('code_prod')).order_by('-total_num')
