@@ -47,3 +47,10 @@ class GroupedOrders(models.Model):
     def __str__(self):
         return f'{self.code_prod} - {self.name_product}'
 
+
+
+class InfoProd(models.Model):
+    code_prod = models.CharField(verbose_name='Артикул продавца', db_index=True, max_length=100)
+    size = models.IntegerField(verbose_name='Размер значка', null=True, blank=True)
+    quantity = models.IntegerField(verbose_name='Количество значков в наборе', null=True, blank=True)
+

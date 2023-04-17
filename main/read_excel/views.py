@@ -9,7 +9,7 @@ from django.views.generic import FormView, ListView
 
 from read_excel.forms import DowloadFile
 from read_excel.models import Orders, GroupedOrders
-from utils.utils import search_folder, split_image, unique_images_function, add_images, distribute_images
+from utils.utils import search_folder, split_image, unique_images_function, distribute_images
 
 
 class MainPage(ListView, LoginRequiredMixin):
@@ -54,11 +54,11 @@ class CollectProduct(ListView, LoginRequiredMixin):
             elif len(files) > 0:
                 name_image = files[0]
                 try:
-                    split_image(name_image, order['path_files'])
+                    split_image(name_image, order['path_files'], order)
                 except Exception as ex:
                     print(f'Ошибка в разделение изображения {ex}')
                 try:
-                    unique_images_function(order['path_files'])
+                    unique_images_function(order['path_files'], order)
                 except Exception as ex:
                     print(f'Ошибка в разделение изображения {ex}')
             else:
@@ -86,6 +86,10 @@ class AddImages(ListView, LoginRequiredMixin):
             distribute_images(queryset_37)
         except Exception as ex:
             logger.debug(f'Ошибка в добавление изображений на лист {ex}')
+        # try:
+        #     distribute_images(queryset_56)
+        # except Exception as ex:
+        #     logger.debug(f'Ошибка в добавление изображений на лист {ex}')
         return context
 
 
