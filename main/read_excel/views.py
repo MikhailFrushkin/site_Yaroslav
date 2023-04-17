@@ -82,14 +82,14 @@ class AddImages(ListView, LoginRequiredMixin):
 
         context['queryset_37'] = queryset_37
         context['queryset_56'] = queryset_56
-        try:
-            distribute_images(queryset_37)
-        except Exception as ex:
-            logger.debug(f'Ошибка в добавление изображений на лист {ex}')
         # try:
-        #     distribute_images(queryset_56)
+        #     distribute_images(queryset_37)
         # except Exception as ex:
         #     logger.debug(f'Ошибка в добавление изображений на лист {ex}')
+        try:
+            distribute_images(queryset_56)
+        except Exception as ex:
+            logger.debug(f'Ошибка в добавление изображений на лист {ex}')
         return context
 
 

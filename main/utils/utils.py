@@ -147,7 +147,7 @@ def distribute_images(queryset):
         25: (35, 20),
         37: (51, 20),
         44: (53, 16),
-        56: (66, 12)
+        56: (70, 12)
     }
     # dict_sizes_images = {
     #     25: (35, 20),
@@ -155,12 +155,15 @@ def distribute_images(queryset):
     #     44: (53, 16),
     #     56: (66, 12)
     # }
-    ICON_SIZE = int((dict_sizes_images[queryset.first().size][0] / 25.4) * 300)
-
-    GAP_SIZE = 1
-    GAP_SIZE_PX = int(GAP_SIZE / 25.4 * 300)
-
     size_images_param = dict_sizes_images[queryset.first().size]
+
+    ICON_SIZE = int((dict_sizes_images[queryset.first().size][0] / 25.4) * 300)
+    if queryset.first().size == 56:
+        GAP_SIZE_PX = 0
+    else:
+        GAP_SIZE = 1
+        GAP_SIZE_PX = int(GAP_SIZE / 25.4 * 300)
+
     COUNT_PER_PAGE = size_images_param[1]
     if COUNT_PER_PAGE == 20:
         ICONS_PER_ROW = 4
