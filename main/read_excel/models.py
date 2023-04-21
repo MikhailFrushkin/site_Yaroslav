@@ -54,3 +54,9 @@ class InfoProd(models.Model):
     size = models.IntegerField(verbose_name='Размер значка', null=True, blank=True)
     quantity = models.IntegerField(verbose_name='Количество значков в наборе', null=True, blank=True)
 
+
+class MyFiles(models.Model):
+    image = models.ImageField(upload_to='images/')
+    name = models.CharField(max_length=30, null=True, blank=True)
+    size = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)

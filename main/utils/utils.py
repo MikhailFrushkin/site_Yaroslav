@@ -8,7 +8,7 @@ from skimage.metrics import structural_similarity as ssim
 from main.settings import BASE_DIR
 import glob
 
-from read_excel.models import GroupedOrders, InfoProd
+from read_excel.models import GroupedOrders, InfoProd, MyFiles
 
 
 def search_folder(name):
@@ -233,4 +233,8 @@ def distribute_images(queryset):
                     i += 1
             except Exception as ex:
                 print(ex)
-            result_image.save(f'{BASE_DIR}/output/{queryset.first().size}/result_{COUNT_PER_PAGE}_{num + 1}.png')
+            image_path = f'{BASE_DIR}/output/{queryset.first().size}/result_{queryset.first().size}_{num + 1}.png'
+            result_image.save(image_path)
+            MyFiles.objects.create(image=image_path,
+                                   name=f'result_{COUNT_PER_PAGE}_{num + 1}.png',
+                                   size=queryset.first().size)

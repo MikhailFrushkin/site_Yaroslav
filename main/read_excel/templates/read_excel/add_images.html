@@ -31,6 +31,16 @@
     {% endfor %}
     </tbody>
 </table>
+<h3>Список файлов:</h3>
+    <ul>
+    {% for file in files_37 %}
+        <li>
+            {{ file.name }} <a href="{{ file.image.url }}" download>Download</a><br>
+        </li>
+    {% empty %}
+        <li>Файлы отсутствуют.</li>
+    {% endfor %}
+    </ul>
 <h2 class="text-center mb-4">Значок на 56 мм</h2>
 <table>
     <thead>
@@ -56,5 +66,15 @@
     {% endfor %}
     </tbody>
 </table>
+<h3>Список файлов:</h3>
+    <ul>
+    {% for file in files_56 %}
+        <li>
+            {{ file.name }} <a href="{{ file.image.url }}" download>Download</a><br>
+        </li>
+    {% empty %}
+        <li>Файлы отсутствуют.</li>
+    {% endfor %}
+    </ul>
 {% endblock %}
 
