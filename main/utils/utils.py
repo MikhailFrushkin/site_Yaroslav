@@ -1,21 +1,26 @@
 import os
+
+import PyPDF2
 import cv2
 import hashlib
 import pandas as pd
 from PIL import Image
 from django.shortcuts import get_object_or_404
+from loguru import logger
 from skimage.metrics import structural_similarity as ssim
 from main.settings import BASE_DIR
 import glob
 
 from read_excel.models import GroupedOrders, InfoProd, MyFiles
+from utils.convert import convert
 
 
 def search_folder(name):
     '''поиск папки по названию артикула'''
     for root, dirs, files in os.walk(os.path.join(BASE_DIR, 'files')):
         if name in dirs:
-            return os.path.join(root, name)
+            folder = os.path.join(root, name)
+            return os.path.normpath(folder)
     return None
 
 
@@ -90,9 +95,9 @@ def unique_images_function(directory, order):
     # Задаем порог для SSIM
     ssim_threshold = 0.80
     folder_name2 = 'Уникальные значки'
-    if not os.path.exists(os.path.join(out_dir, folder_name2)):
-        os.makedirs(os.path.join(out_dir, folder_name2))
-        print("Папка", folder_name2, "была успешно создана в директории", out_dir)
+    if not os.path.exists(os.path.join(directory, folder_name2)):
+        os.makedirs(os.path.join(directory, folder_name2))
+        print("Папка", folder_name2, "была успешно создана в директории", directory)
         # Проходимся по каждому изображению
         for i in range(1, len(os.listdir(out_dir)) + 1):
             # Открываем изображение и вычисляем его хеш
@@ -126,7 +131,7 @@ def unique_images_function(directory, order):
                 print(ex)
                 continue
         for i, img in enumerate(unique_images):
-            img.save(f'{os.path.join(out_dir, folder_name2)}/{i + 1}.png')
+            img.save(f'{os.path.join(directory, folder_name2)}/{i + 1}.png')
             print(i + 1)
 
         prod = GroupedOrders.objects.get(code_prod=order['code_prod'])
@@ -176,9 +181,10 @@ def distribute_images(queryset):
         ICONS_PER_ROW = 3
         ICONS_PER_COL = 4
     groups = []
+    arts_list_orders = []
     for i, product in enumerate(queryset):
         num = product.total_num
-        path_images = f'{product.path_files}/Значки по отдельности/Уникальные значки/'
+        path_images = f'{product.path_files}/Уникальные значки/'
         files = glob.glob(path_images + '/*.png')
         files = sorted(files, key=lambda x: int(os.path.basename(x).split('.')[0]))
         for _ in range(product.total_num):
@@ -194,6 +200,7 @@ def distribute_images(queryset):
         j = 1
         new_group = []
         new_group.extend(groups[i])
+        arts_list_orders.append(os.path.dirname(os.path.abspath(groups[i][0])))
         while j < len(groups) or len(new_group) == COUNT_PER_PAGE:
             try:
                 group = groups[j]
@@ -203,6 +210,7 @@ def distribute_images(queryset):
             len_collect = len(new_group) + len(group)
             if len_collect <= COUNT_PER_PAGE:
                 new_group.extend(group)
+                arts_list_orders.append(os.path.dirname(os.path.abspath(group[0])))
                 groups.pop(j)
             else:
                 j += 1
@@ -210,6 +218,9 @@ def distribute_images(queryset):
                 break
         groups.pop(i)
         result.append(new_group)
+
+    for i in range(len(arts_list_orders)):
+        arts_list_orders[i] = arts_list_orders[i].replace("\\Уникальные значки", "")
 
     for num, set_images in enumerate(result):
         result_image = Image.new('RGB', (A4_WIDTH, A4_HEIGHT), (255, 255, 255))
@@ -232,9 +243,49 @@ def distribute_images(queryset):
                     result_image.paste(icon_image, (x, y))
                     i += 1
             except Exception as ex:
-                print(ex)
+                logger.debug(ex)
             image_path = f'{BASE_DIR}/output/{queryset.first().size}/result_{queryset.first().size}_{num + 1}.png'
             result_image.save(image_path)
             MyFiles.objects.create(image=image_path,
                                    name=f'result_{COUNT_PER_PAGE}_{num + 1}.png',
                                    size=queryset.first().size)
+    try:
+        create_pdf(arts_list_orders)
+    except Exception as ex:
+        logger.debug(ex)
+    try:
+        create_six_images(arts_list_orders)
+    except Exception as ex:
+        logger.debug(ex)
+
+
+def create_pdf(arts_list):
+    pdf_files = []
+    merged_pdf = PyPDF2.PdfMerger()
+    for i in arts_list:
+        files = glob.glob(i + '/*.pdf')
+        if len(files) == 0:
+            print(f'Не найдено pdf файлов в папке {i}')
+        else:
+            pdf_files.append(files[0])
+    print(pdf_files)
+    for file_name in pdf_files:
+        with open(file_name, 'rb') as pdf_file:
+            merged_pdf.append(pdf_file)
+
+    # сохраняем объединенный PDF файл в новый файл
+    with open(f'{BASE_DIR}/output/merged_file.pdf', 'wb') as output:
+        merged_pdf.write(output)
+
+
+def create_six_images(arts_list):
+    skin_list = []
+    for i in arts_list:
+        files = glob.glob(i + '/*.xcf')
+        if len(files) == 0:
+            continue
+        else:
+            files = sorted(files, key=lambda f: os.path.getsize(f))
+            name_image = convert(files[0], name_file='skin')
+            skin_list.append(name_image)
+    print(skin_list)

@@ -2,7 +2,7 @@ import os
 from subprocess import run
 
 
-def convert(file):
+def convert(file, name_file='new'):
     print(file)
     filename = file
     folder = os.path.dirname(os.path.abspath(file))
@@ -16,13 +16,14 @@ def convert(file):
         f'(gimp-file-load RUN-NONINTERACTIVE "{filename}" "{filename}")',
         '-b',
         f'(gimp-file-save RUN-NONINTERACTIVE 1 (car (gimp-image-merge-visible-layers (aref (cadr (gimp-image-list)) 0) 0)) '
-        f'"{os.path.join(folder, "new.png")}" "new.png")',
+        f'"{os.path.join(folder, f"{name_file}.png")}" f"{name_file}.png")',
         '-b',
         '(gimp-quit 0)'
     ]
 
     run(gimp_command, shell=False)
-    return f'{os.path.join(folder, "new.png")}'
+    print(f'{os.path.join(folder, f"{name_file}.png")}')
+    return f'{os.path.join(folder, f"{name_file}.png")}'
 
 
 if __name__ == '__main__':
