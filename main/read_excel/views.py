@@ -1,4 +1,5 @@
 import glob
+import os
 from datetime import datetime
 from loguru import logger
 import openpyxl
@@ -10,6 +11,7 @@ from django.views.generic import FormView, ListView
 from main.settings import STATIC_ROOT, STATICFILES_DIRS
 from read_excel.forms import DowloadFile
 from read_excel.models import Orders, GroupedOrders
+from utils.convert import convert
 from utils.utils import search_folder, split_image, unique_images_function, distribute_images
 
 
@@ -38,7 +40,7 @@ class CollectProduct(ListView, LoginRequiredMixin):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         from django.db.models import Q
-        products = Orders.objects.exclude(Q(path_files__isnull=True)). \
+        products = Orders.objects.filter(status='Новое').exclude(Q(path_files__isnull=True)). \
             values('code_prod', 'name_product', 'path_files', 'size', 'quantity'). \
             annotate(total_num=Count('code_prod')).order_by('-total_num')
 
@@ -52,19 +54,25 @@ class CollectProduct(ListView, LoginRequiredMixin):
         for order in products:
             files = glob.glob(order['path_files'] + '/*.png') + glob.glob(order['path_files'] + '/*.jpg')
             if len(files) > 1:
-                print('найшлось больше 1 файла со значками')
+                print('нашлось больше 1 файла со значками')
+                break
+            elif len(files) == 0:
+                files = glob.glob(order['path_files'] + '/*.xcf')
+                files = sorted(files, key=lambda f: os.path.getsize(f), reverse=True)
+                name_image = convert(files[0])
             elif len(files) > 0:
                 name_image = files[0]
-                try:
-                    split_image(name_image, order['path_files'], order)
-                except Exception as ex:
-                    print(f'Ошибка в разделение изображения {ex}')
-                try:
-                    unique_images_function(order['path_files'], order)
-                except Exception as ex:
-                    print(f'Ошибка в разделение изображения {ex}')
             else:
-                print(order)
+                print(f'не нашлись файлы изображений {order["path_files"]}')
+            try:
+                split_image(name_image, order['path_files'], order)
+            except Exception as ex:
+                print(f'Ошибка в разделение изображения {ex}')
+            try:
+                unique_images_function(order['path_files'], order)
+            except Exception as ex:
+                print(f'Ошибка в разделение изображения {ex}')
+
         context['products'] = GroupedOrders.objects.all()
         context['bad_products'] = Orders.objects.filter(path_files__isnull=True). \
             values('code_prod', 'name_product', 'path_files'). \
@@ -84,10 +92,10 @@ class AddImages(ListView, LoginRequiredMixin):
 
         context['queryset_37'] = queryset_37
         context['queryset_56'] = queryset_56
-        # try:
-        #     distribute_images(queryset_37)
-        # except Exception as ex:
-        #     logger.debug(f'Ошибка в добавление изображений на лист {ex}')
+        try:
+            distribute_images(queryset_37)
+        except Exception as ex:
+            logger.debug(f'Ошибка в добавление изображений на лист {ex}')
         try:
             distribute_images(queryset_56)
         except Exception as ex:

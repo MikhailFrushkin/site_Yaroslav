@@ -21,17 +21,18 @@ def search_folder(name):
 
 def split_image(filename, dir_name, order):
     icon_dir = dir_name
-    image = cv2.imread(filename)
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    ret, thresh = cv2.threshold(gray_image, 240, 255, cv2.THRESH_BINARY)
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    scale_px_mm = 5  # 10 пикселей на 1 мм
     os.makedirs(icon_dir, exist_ok=True)
-    count = 1
-    size = None
     folder_name = 'Значки по отдельности'
 
     if not os.path.exists(os.path.join(icon_dir, folder_name)):
+        image = cv2.imread(filename)
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        ret, thresh = cv2.threshold(gray_image, 240, 255, cv2.THRESH_BINARY)
+        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        scale_px_mm = 5  # 10 пикселей на 1 мм
+        count = 1
+        flag_56 = True
+        size = None
         os.makedirs(os.path.join(icon_dir, folder_name))
         print("Папка", folder_name, "была успешно создана в директории", icon_dir)
         for i in range(len(contours)):
@@ -39,13 +40,16 @@ def split_image(filename, dir_name, order):
 
             diameter_px = max(w, h)
             diameter_mm = diameter_px / scale_px_mm
-            if 150 > diameter_mm > 100:
+
+            if 140 > diameter_mm > 110:
                 print(diameter_mm)
                 size = 37
                 icon = image[y:y + h, x:x + w]
                 cv2.imwrite(f"{icon_dir}/Значки по отдельности/{count}.png", icon)
                 count += 1
-            elif 600 > diameter_mm > 200:
+                flag_56 = False
+            elif 600 > diameter_mm > 200 and flag_56:
+                print(flag_56)
                 size = 56
                 print(f'большие значки {diameter_mm}')
                 if w > h:  # vertical rectangle
@@ -229,4 +233,4 @@ def distribute_images(queryset):
                     i += 1
             except Exception as ex:
                 print(ex)
-            result_image.save(f'{BASE_DIR}/output/result_{COUNT_PER_PAGE}_{num + 1}.png')
+            result_image.save(f'{BASE_DIR}/output/{queryset.first().size}/result_{COUNT_PER_PAGE}_{num + 1}.png')
