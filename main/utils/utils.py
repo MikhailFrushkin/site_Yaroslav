@@ -10,6 +10,9 @@ from loguru import logger
 from skimage.metrics import structural_similarity as ssim
 from main.settings import BASE_DIR
 import glob
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.pdfgen import canvas
+from PIL import Image
 
 from read_excel.models import GroupedOrders, InfoProd, MyFiles
 from utils.convert import convert
@@ -28,6 +31,7 @@ def split_image(filename, dir_name, order):
     icon_dir = dir_name
     os.makedirs(icon_dir, exist_ok=True)
     folder_name = 'Значки по отдельности'
+    size = None
 
     if not os.path.exists(os.path.join(icon_dir, folder_name)):
         image = cv2.imread(filename)
@@ -37,7 +41,6 @@ def split_image(filename, dir_name, order):
         scale_px_mm = 5  # 10 пикселей на 1 мм
         count = 1
         flag_56 = True
-        size = None
         os.makedirs(os.path.join(icon_dir, folder_name))
         print("Папка", folder_name, "была успешно создана в директории", icon_dir)
         for i in range(len(contours)):
@@ -78,13 +81,19 @@ def split_image(filename, dir_name, order):
             prod.size = size
             prod.save()
         except Exception as ex:
-            print(ex)
+            logger.debug(ex)
     else:
         print("Папка", folder_name, "уже существует в директории", icon_dir)
-        order_info = InfoProd.objects.get(code_prod=order['code_prod'])
-        prod = GroupedOrders.objects.get(code_prod=order['code_prod'])
-        prod.size = order_info.size
-        prod.save()
+        try:
+            obj, created = InfoProd.objects.get_or_create(
+                code_prod=order['code_prod'],
+                size=size)
+            prod = GroupedOrders.objects.filter(path_files=dir_name).first()
+            if size:
+                prod.size = size
+                prod.save()
+        except Exception as ex:
+            logger.debug(ex)
 
 
 def unique_images_function(directory, order):
@@ -220,7 +229,7 @@ def distribute_images(queryset):
         result.append(new_group)
 
     for i in range(len(arts_list_orders)):
-        arts_list_orders[i] = arts_list_orders[i].replace("\\Уникальные значки", "")
+        arts_list_orders[i] = arts_list_orders[i].replace("/Уникальные значки", "")
 
     for num, set_images in enumerate(result):
         result_image = Image.new('RGB', (A4_WIDTH, A4_HEIGHT), (255, 255, 255))
@@ -268,7 +277,6 @@ def create_pdf(arts_list):
             print(f'Не найдено pdf файлов в папке {i}')
         else:
             pdf_files.append(files[0])
-    print(pdf_files)
     for file_name in pdf_files:
         with open(file_name, 'rb') as pdf_file:
             merged_pdf.append(pdf_file)
@@ -279,13 +287,67 @@ def create_pdf(arts_list):
 
 
 def create_six_images(arts_list):
-    skin_list = []
+    images = []
+    full_list_skins = []
+    skin_list = set(arts_list)
     for i in arts_list:
-        files = glob.glob(i + '/*.xcf')
-        if len(files) == 0:
+        try:
+            full_list_skins.append(os.path.join(i, 'Уникальные значки/skin.png'))
+        except Exception as ex:
+            logger.debug(f'{i} - {ex}')
             continue
-        else:
-            files = sorted(files, key=lambda f: os.path.getsize(f))
-            name_image = convert(files[0], name_file='skin')
-            skin_list.append(name_image)
-    print(skin_list)
+    for i in skin_list:
+        if not os.path.exists(os.path.join(i, 'Уникальные значки/skin.png')):
+            files = glob.glob(i + '/*.xcf')
+            if len(files) == 0:
+                continue
+            else:
+                files = sorted(files, key=lambda f: os.path.getsize(f))
+                convert(files[0], name_file='skin')
+
+    for i in full_list_skins:
+        if os.path.exists(i):
+            images.append(i)
+    try:
+        save_as_pdf(images, f'{BASE_DIR}/output/skins.pdf')
+    except Exception as ex:
+        logger.debug(f'{ex}')
+
+
+def save_as_pdf(images, output_file):
+    A4_WIDTH = 2480
+    A4_HEIGHT = 3508
+
+    SIZE_H = int(A4_HEIGHT / 3) - 40
+    SIZE_W = int(A4_WIDTH / 3) - 40
+    GAP_SIZE = 1
+    GAP_SIZE_PX = int(GAP_SIZE / 25.4 * 300)
+
+    ICONS_PER_ROW = 3
+    ICONS_PER_COL = 3
+    result_image = Image.new('RGB', (A4_WIDTH, A4_HEIGHT), (255, 255, 255))
+
+    for num, set_images in enumerate(images):
+        try:
+            icon_image = Image.open(set_images).convert('RGBA')
+            background = Image.new('RGBA', icon_image.size, (255, 255, 255, 255))
+            alpha_composite = Image.alpha_composite(background, icon_image)
+            icon_image = alpha_composite.crop(alpha_composite.getbbox())
+            icon_image = icon_image.resize((SIZE_W, SIZE_H))
+            # Вычисляем координаты для размещения изображения на листе A4
+            row = (num % 9) // ICONS_PER_ROW
+            col = num % ICONS_PER_ROW
+            x = col * (SIZE_W + GAP_SIZE_PX) + (
+                    A4_WIDTH - SIZE_W * ICONS_PER_ROW - GAP_SIZE_PX * (ICONS_PER_ROW - 1)) // 2
+            y = row * (SIZE_H + GAP_SIZE_PX) + (
+                    A4_HEIGHT - SIZE_H * ICONS_PER_COL - GAP_SIZE_PX * (ICONS_PER_COL - 1)) // 2
+            # Размещаем изображение на листе A4
+            result_image.paste(icon_image, (x, y))
+            if (num + 1) % 9 == 0:
+                image_path = f'{BASE_DIR}/output//result_{num + 1}.png'
+                result_image.save(image_path)
+                result_image = Image.new('RGB', (A4_WIDTH, A4_HEIGHT), (255, 255, 255))
+        except Exception as ex:
+            logger.debug(ex)
+    image_path = f'{BASE_DIR}/output//result_{num + 1}.png'
+    result_image.save(image_path)
