@@ -1,19 +1,14 @@
+import glob
+import hashlib
 import os
 
 import PyPDF2
 import cv2
-import hashlib
-import pandas as pd
 from PIL import Image
-from django.shortcuts import get_object_or_404
 from loguru import logger
 from skimage.metrics import structural_similarity as ssim
-from main.settings import BASE_DIR
-import glob
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.pdfgen import canvas
-from PIL import Image
 
+from main.settings import BASE_DIR
 from read_excel.models import GroupedOrders, InfoProd, MyFiles
 from utils.convert import convert
 
@@ -34,6 +29,8 @@ def split_image(filename, dir_name, order):
     size = None
 
     if not os.path.exists(os.path.join(icon_dir, folder_name)):
+        os.makedirs(os.path.join(icon_dir, folder_name))
+        print("Папка", folder_name, "была успешно создана в директории", icon_dir)
         image = cv2.imread(filename)
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         ret, thresh = cv2.threshold(gray_image, 240, 255, cv2.THRESH_BINARY)
@@ -41,8 +38,7 @@ def split_image(filename, dir_name, order):
         scale_px_mm = 5  # 10 пикселей на 1 мм
         count = 1
         flag_56 = True
-        os.makedirs(os.path.join(icon_dir, folder_name))
-        print("Папка", folder_name, "была успешно создана в директории", icon_dir)
+
         for i in range(len(contours)):
             x, y, w, h = cv2.boundingRect(contours[i])
 
@@ -245,9 +241,9 @@ def distribute_images(queryset):
                     row = i // ICONS_PER_ROW
                     col = i % ICONS_PER_ROW
                     x = col * (ICON_SIZE + GAP_SIZE_PX) + (
-                                A4_WIDTH - ICON_SIZE * ICONS_PER_ROW - GAP_SIZE_PX * (ICONS_PER_ROW - 1)) // 2
+                            A4_WIDTH - ICON_SIZE * ICONS_PER_ROW - GAP_SIZE_PX * (ICONS_PER_ROW - 1)) // 2
                     y = row * (ICON_SIZE + GAP_SIZE_PX) + (
-                                A4_HEIGHT - ICON_SIZE * ICONS_PER_COL - GAP_SIZE_PX * (ICONS_PER_COL - 1)) // 2
+                            A4_HEIGHT - ICON_SIZE * ICONS_PER_COL - GAP_SIZE_PX * (ICONS_PER_COL - 1)) // 2
                     # Размещаем изображение на листе A4
                     result_image.paste(icon_image, (x, y))
                     i += 1
@@ -259,16 +255,16 @@ def distribute_images(queryset):
                                    name=f'result_{COUNT_PER_PAGE}_{num + 1}.png',
                                    size=queryset.first().size)
     try:
-        create_pdf(arts_list_orders)
+        create_pdf(arts_list_orders, queryset.first().size)
     except Exception as ex:
         logger.debug(ex)
     try:
-        create_six_images(arts_list_orders)
+        create_six_images(arts_list_orders, queryset.first().size)
     except Exception as ex:
         logger.debug(ex)
 
 
-def create_pdf(arts_list):
+def create_pdf(arts_list, size):
     pdf_files = []
     merged_pdf = PyPDF2.PdfMerger()
     for i in arts_list:
@@ -282,22 +278,22 @@ def create_pdf(arts_list):
             merged_pdf.append(pdf_file)
 
     # сохраняем объединенный PDF файл в новый файл
-    with open(f'{BASE_DIR}/output/merged_file.pdf', 'wb') as output:
+    with open(f'{BASE_DIR}/output/{size}/merged_file.pdf', 'wb') as output:
         merged_pdf.write(output)
 
 
-def create_six_images(arts_list):
+def create_six_images(arts_list, size):
     images = []
     full_list_skins = []
     skin_list = set(arts_list)
     for i in arts_list:
         try:
-            full_list_skins.append(os.path.join(i, 'Уникальные значки/skin.png'))
+            full_list_skins.append(os.path.join(i, 'Обложка/skin.png'))
         except Exception as ex:
             logger.debug(f'{i} - {ex}')
             continue
     for i in skin_list:
-        if not os.path.exists(os.path.join(i, 'Уникальные значки/skin.png')):
+        if not os.path.exists(os.path.join(i, 'Обложка/skin.png')):
             files = glob.glob(i + '/*.xcf')
             if len(files) == 0:
                 continue
@@ -309,12 +305,12 @@ def create_six_images(arts_list):
         if os.path.exists(i):
             images.append(i)
     try:
-        save_as_pdf(images, f'{BASE_DIR}/output/skins.pdf')
+        save_as_pdf(images, size)
     except Exception as ex:
         logger.debug(f'{ex}')
 
 
-def save_as_pdf(images, output_file):
+def save_as_pdf(images, size):
     A4_WIDTH = 2480
     A4_HEIGHT = 3508
 
@@ -326,7 +322,7 @@ def save_as_pdf(images, output_file):
     ICONS_PER_ROW = 3
     ICONS_PER_COL = 3
     result_image = Image.new('RGB', (A4_WIDTH, A4_HEIGHT), (255, 255, 255))
-
+    num_page = 1
     for num, set_images in enumerate(images):
         try:
             icon_image = Image.open(set_images).convert('RGBA')
@@ -344,10 +340,11 @@ def save_as_pdf(images, output_file):
             # Размещаем изображение на листе A4
             result_image.paste(icon_image, (x, y))
             if (num + 1) % 9 == 0:
-                image_path = f'{BASE_DIR}/output//result_{num + 1}.png'
+                image_path = f'{BASE_DIR}/output/{size}/skin_{num_page}.png'
                 result_image.save(image_path)
                 result_image = Image.new('RGB', (A4_WIDTH, A4_HEIGHT), (255, 255, 255))
+                num_page += 1
         except Exception as ex:
             logger.debug(ex)
-    image_path = f'{BASE_DIR}/output//result_{num + 1}.png'
+    image_path = f'{BASE_DIR}/output/{size}/skin_{num_page}.png'
     result_image.save(image_path)

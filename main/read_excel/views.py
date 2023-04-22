@@ -2,13 +2,12 @@ import glob
 import os
 from datetime import datetime
 
-from django.shortcuts import render
-from loguru import logger
 import openpyxl
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
 from django.urls import reverse_lazy
 from django.views.generic import FormView, ListView
+from loguru import logger
 
 from main.settings import STATIC_ROOT, STATICFILES_DIRS
 from read_excel.forms import DowloadFile
@@ -99,10 +98,10 @@ class AddImages(ListView, LoginRequiredMixin):
             distribute_images(queryset_37)
         except Exception as ex:
             logger.debug(f'Ошибка в добавление изображений на лист {ex}')
-        # try:
-        #     distribute_images(queryset_56)
-        # except Exception as ex:
-        #     logger.debug(f'Ошибка в добавление изображений на лист {ex}')
+        try:
+            distribute_images(queryset_56)
+        except Exception as ex:
+            logger.debug(f'Ошибка в добавление изображений на лист {ex}')
         context['files_37'] = MyFiles.objects.filter(size=37)
         context['files_56'] = MyFiles.objects.filter(size=56)
 
@@ -141,5 +140,3 @@ class Dowload(FormView, LoginRequiredMixin):
                 )
                 order.save()
             return super().form_valid(form)
-
-
