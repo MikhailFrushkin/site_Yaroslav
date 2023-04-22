@@ -11,6 +11,7 @@ from skimage.metrics import structural_similarity as ssim
 from main.settings import BASE_DIR
 from read_excel.models import GroupedOrders, InfoProd, MyFiles
 from utils.convert import convert
+from utils.write_image import write_images_art
 
 
 def search_folder(name):
@@ -233,10 +234,11 @@ def distribute_images(queryset):
             try:
                 for file in set_images:
                     icon_image = Image.open(file).convert('RGBA')
-                    background = Image.new('RGBA', icon_image.size, (255, 255, 255, 255))
+                    background = Image.new('RGBA', icon_image.size, (55, 255, 255, 255))
                     alpha_composite = Image.alpha_composite(background, icon_image)
                     icon_image = alpha_composite.crop(alpha_composite.getbbox())
                     icon_image = icon_image.resize((ICON_SIZE, ICON_SIZE))
+                    icon_image = write_images_art(icon_image, f'№{num}', f'{os.path.basename(os.path.dirname(file))}')
                     # Вычисляем координаты для размещения изображения на листе A4
                     row = i // ICONS_PER_ROW
                     col = i % ICONS_PER_ROW
